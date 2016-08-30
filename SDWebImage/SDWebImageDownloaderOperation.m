@@ -90,6 +90,7 @@ NSString *const SDWebImageDownloadFinishNotification = @"SDWebImageDownloadFinis
 
 - (void)start {
     @synchronized (self) {
+        //如果在执行之前 被取消，则取消任务
         if (self.isCancelled) {
             self.finished = YES;
             [self reset];
@@ -97,6 +98,7 @@ NSString *const SDWebImageDownloadFinishNotification = @"SDWebImageDownloadFinis
         }
 
 #if TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_4_0
+        //添加后台任务
         Class UIApplicationClass = NSClassFromString(@"UIApplication");
         BOOL hasApplication = UIApplicationClass && [UIApplicationClass respondsToSelector:@selector(sharedApplication)];
         if (hasApplication && [self shouldContinueWhenAppEntersBackground]) {
@@ -141,6 +143,7 @@ NSString *const SDWebImageDownloadFinishNotification = @"SDWebImageDownloadFinis
         if (self.progressBlock) {
             self.progressBlock(0, NSURLResponseUnknownLength);
         }
+        //开始下载任务
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:SDWebImageDownloadStartNotification object:self];
         });
@@ -165,6 +168,7 @@ NSString *const SDWebImageDownloadFinishNotification = @"SDWebImageDownloadFinis
 }
 
 - (void)cancel {
+    //可能在任何其它线程中调用cancel
     @synchronized (self) {
         if (self.thread) {
             [self performSelector:@selector(cancelInternalAndStop) onThread:self.thread withObject:nil waitUntilDone:NO];
@@ -234,7 +238,8 @@ NSString *const SDWebImageDownloadFinishNotification = @"SDWebImageDownloadFinis
 - (BOOL)isConcurrent {
     return YES;
 }
-
+//如果session的delegate是self，则用下以下代理方法
+//如果session是SDWebImageDownloader，也会调用单个operation的以下方法
 #pragma mark NSURLSessionDataDelegate
 
 - (void)URLSession:(NSURLSession *)session

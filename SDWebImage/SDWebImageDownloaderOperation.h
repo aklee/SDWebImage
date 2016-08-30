@@ -5,6 +5,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+/*
+ 具体的一个下载操作
+ 下载operation包括session下的一个task
+ */
 
 #import <Foundation/Foundation.h>
 #import "SDWebImageDownloader.h"

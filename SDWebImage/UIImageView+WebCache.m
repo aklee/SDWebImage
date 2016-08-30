@@ -42,10 +42,14 @@ static char TAG_ACTIVITY_SHOW;
 }
 
 - (void)sd_setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder options:(SDWebImageOptions)options progress:(SDWebImageDownloaderProgressBlock)progressBlock completed:(SDWebImageCompletionBlock)completedBlock {
+    
+    //移除当前ImageView上的下载操作
     [self sd_cancelCurrentImageLoad];
+    
     objc_setAssociatedObject(self, &imageURLKey, url, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 
     if (!(options & SDWebImageDelayPlaceholder)) {
+        //设置placeHolder
         dispatch_main_async_safe(^{
             self.image = placeholder;
         });
@@ -55,36 +59,45 @@ static char TAG_ACTIVITY_SHOW;
 
         // check if activityView is enabled or not
         if ([self showActivityIndicatorView]) {
+            //动态给imageView添加菊花
             [self addActivityIndicator];
         }
 
         __weak __typeof(self)wself = self;
+        
         id <SDWebImageOperation> operation = [SDWebImageManager.sharedManager downloadImageWithURL:url options:options progress:progressBlock completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
+            //移除菊花
             [wself removeActivityIndicator];
             if (!wself) return;
+            //刷新主线程
             dispatch_main_sync_safe(^{
                 if (!wself) return;
                 if (image && (options & SDWebImageAvoidAutoSetImage) && completedBlock)
-                {
+                {//禁止自动设置UIImageView.image属性则直接返回
                     completedBlock(image, error, cacheType, url);
                     return;
                 }
                 else if (image) {
+                    //设置图片
                     wself.image = image;
                     [wself setNeedsLayout];
                 } else {
+                    //延迟placeHolder则马上设置placeHolder
                     if ((options & SDWebImageDelayPlaceholder)) {
                         wself.image = placeholder;
                         [wself setNeedsLayout];
                     }
                 }
+                //完成图片下载的回调
                 if (completedBlock && finished) {
                     completedBlock(image, error, cacheType, url);
                 }
             });
         }];
+        //刷新UIView的分类属性，更新当前OperationKey（下载操作字典），这样下次移除的就是最新的
         [self sd_setImageLoadOperation:operation forKey:@"UIImageViewImageLoad"];
     } else {
+        //url不正确，执行回调
         dispatch_main_async_safe(^{
             [self removeActivityIndicator];
             if (completedBlock) {
@@ -107,6 +120,7 @@ static char TAG_ACTIVITY_SHOW;
 }
 
 - (void)sd_setAnimationImagesWithURLs:(NSArray *)arrayOfURLs {
+    //取消当前的下载操作
     [self sd_cancelCurrentAnimationImagesLoad];
     __weak __typeof(self)wself = self;
 
@@ -116,9 +130,11 @@ static char TAG_ACTIVITY_SHOW;
         id <SDWebImageOperation> operation = [SDWebImageManager.sharedManager downloadImageWithURL:logoImageURL options:0 progress:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
             if (!wself) return;
             dispatch_main_sync_safe(^{
+                //停止动画
                 __strong UIImageView *sself = wself;
                 [sself stopAnimating];
                 if (sself && image) {
+                    //累加下载完成的image到operationsArray 并开启动画
                     NSMutableArray *currentImages = [[sself animationImages] mutableCopy];
                     if (!currentImages) {
                         currentImages = [[NSMutableArray alloc] init];
@@ -133,7 +149,7 @@ static char TAG_ACTIVITY_SHOW;
         }];
         [operationsArray addObject:operation];
     }
-
+    //更新下载操作字典
     [self sd_setImageLoadOperation:[NSArray arrayWithArray:operationsArray] forKey:@"UIImageViewAnimationImages"];
 }
 

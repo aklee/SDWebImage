@@ -5,7 +5,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
+/*
+ SDWebImageDownloader 负责维护了一个并发下载队列，队列中都是SDWebImageDownloaderOperation，
+ 每个SDWebImageDownloaderOperation负责对一张图片进行下载
+ 
+ SDWebImageDownloader 内部维护了一个并行队列barrierQueue，管理所有图片的回调块
+ */
 #import <Foundation/Foundation.h>
 #import "SDWebImageCompat.h"
 #import "SDWebImageOperation.h"

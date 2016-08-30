@@ -127,7 +127,7 @@ static NSString *const kCompletedCallbackKey = @"completed";
 }
 
 - (void)setOperationClass:(Class)operationClass {
-    _operationClass = operationClass ?: [SDWebImageDownloaderOperation class];
+    _operationClass = operationClass ?   : [SDWebImageDownloaderOperation class];
 }
 
 - (id <SDWebImageOperation>)downloadImageWithURL:(NSURL *)url options:(SDWebImageDownloaderOptions)options progress:(SDWebImageDownloaderProgressBlock)progressBlock completed:(SDWebImageDownloaderCompletedBlock)completedBlock {
@@ -140,6 +140,9 @@ static NSString *const kCompletedCallbackKey = @"completed";
             timeoutInterval = 15.0;
         }
 
+        
+        //准备好request ，headers， session， 传递给Operation
+        
         // In order to prevent from potential duplicate caching (NSURLCache + SDImageCache) we disable the cache for image requests if told otherwise
         NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url cachePolicy:(options & SDWebImageDownloaderUseNSURLCache ? NSURLRequestUseProtocolCachePolicy : NSURLRequestReloadIgnoringLocalCacheData) timeoutInterval:timeoutInterval];
         request.HTTPShouldHandleCookies = (options & SDWebImageDownloaderHandleCookies);
@@ -154,6 +157,8 @@ static NSString *const kCompletedCallbackKey = @"completed";
                                                         inSession:self.session
                                                           options:options
                                                          progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                                                             
+                                                             //把progress事件传递出去  调用block
                                                              SDWebImageDownloader *sself = wself;
                                                              if (!sself) return;
                                                              __block NSArray *callbacksForURL;
@@ -168,6 +173,8 @@ static NSString *const kCompletedCallbackKey = @"completed";
                                                              }
                                                          }
                                                         completed:^(UIImage *image, NSData *data, NSError *error, BOOL finished) {
+                                                            
+                                                            
                                                             SDWebImageDownloader *sself = wself;
                                                             if (!sself) return;
                                                             __block NSArray *callbacksForURL;
@@ -203,6 +210,7 @@ static NSString *const kCompletedCallbackKey = @"completed";
             operation.queuePriority = NSOperationQueuePriorityLow;
         }
 
+        //加入队列后，队列拥有掌控权，会开启操作去下载图片
         [wself.downloadQueue addOperation:operation];
         if (wself.executionOrder == SDWebImageDownloaderLIFOExecutionOrder) {
             // Emulate LIFO execution order by systematically adding new operations as last operation's dependency
@@ -222,7 +230,7 @@ static NSString *const kCompletedCallbackKey = @"completed";
         }
         return;
     }
-
+    //串行操作，避免多线程导致URLCallbacks数据混乱
     dispatch_barrier_sync(self.barrierQueue, ^{
         BOOL first = NO;
         if (!self.URLCallbacks[url]) {
