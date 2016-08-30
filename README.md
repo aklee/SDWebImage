@@ -56,7 +56,9 @@ SDWebImageDownloaderOperation 负责了单个图片的下载（sessiontask）和
 -NSURLRequestReloadIgnoringLocalCacheData 忽略本地缓存数据，直接请求服务端.
 
 
-阅读过程中，在源码中添加了的注释
+
+
+阅读过程中，并在源码中添加了的注释，欢迎纠错！
 
 
 
