@@ -1,5 +1,11 @@
 Web Image
 =========
+
+这段时间有一些空闲时间， 所以就仔细阅读了源码。读完之后觉得受益匪浅。
+有几个重要点：
+
+
+
 [![Build Status](http://img.shields.io/travis/rs/SDWebImage/master.svg?style=flat)](https://travis-ci.org/rs/SDWebImage)
 [![Pod Version](http://img.shields.io/cocoapods/v/SDWebImage.svg?style=flat)](http://cocoadocs.org/docsets/SDWebImage/)
 [![Pod Platform](http://img.shields.io/cocoapods/p/SDWebImage.svg?style=flat)](http://cocoadocs.org/docsets/SDWebImage/)
