@@ -4,19 +4,41 @@ Web Image
 这段时间有一些空闲时间， 所以就仔细阅读了源码。读完之后觉得受益匪浅。
 有几个重要点：
 
+枚举的多用法
+----------
+```objective-c
+//枚举定义
+typedef NS_OPTIONS(NSUInteger, AKDirection) {
+    AKDirectionT  = 1<<0,
+    AKDirectionB  = 1<<1,
+    AKDirectionL  = 1<<2   ,
+    AKDirectionR  = 1<<3
 
+};
 
-[![Build Status](http://img.shields.io/travis/rs/SDWebImage/master.svg?style=flat)](https://travis-ci.org/rs/SDWebImage)
-[![Pod Version](http://img.shields.io/cocoapods/v/SDWebImage.svg?style=flat)](http://cocoadocs.org/docsets/SDWebImage/)
-[![Pod Platform](http://img.shields.io/cocoapods/p/SDWebImage.svg?style=flat)](http://cocoadocs.org/docsets/SDWebImage/)
-[![Pod License](http://img.shields.io/cocoapods/l/SDWebImage.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0.html)
-[![Dependency Status](https://www.versioneye.com/objective-c/sdwebimage/3.3/badge.svg?style=flat)](https://www.versioneye.com/objective-c/sdwebimage/3.3)
-[![Reference Status](https://www.versioneye.com/objective-c/sdwebimage/reference_badge.svg?style=flat)](https://www.versioneye.com/objective-c/sdwebimage/references)
-[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/rs/SDWebImage)
+  AKDirection dir2= AKDirectionT;
+        AKDirection dir3 = dir2 & AKDirectionL; //0
+        AKDirection dir4 = dir2 & AKDirectionT; //AKDirectionT。约等于 dir2 == AKDirectionT
 
-This library provides a category for UIImageView with support for remote images coming from the web.
+        //addDir 可以保存 多种类型。可以添加 移除对应类型
+        AKDirection addDir = 0;
+        //addDir添加AKDirectionL类型
+        addDir |=AKDirectionL;
+        addDir |=AKDirectionT;
 
-It provides:
+        if (addDir & AKDirectionL) {
+            NSLog(@"addDir include AKDirectionL");
+        }
+        if (!(addDir & AKDirectionB)) {
+            NSLog(@"addDir NOT include AKDirectionB");
+        }
+
+        //addDir 移除AKDirectionL
+        addDir &= ~AKDirectionL;
+        if (!(addDir & AKDirectionL)) {
+            NSLog(@"addDir remove AKDirectionL");
+        }
+```
 
 - An `UIImageView` category adding web image and cache management to the Cocoa Touch framework
 - An asynchronous image downloader
